@@ -2,8 +2,10 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
   Animated, ActivityIndicator, SafeAreaView, Platform,
-  Dimensions, StatusBar, Vibration,
+  Dimensions, StatusBar, Vibration, LogBox,
 } from 'react-native';
+
+LogBox.ignoreAllLogs();
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -114,7 +116,7 @@ function LigneTentative({ lettres, evaluation, longueur }: {
   return (
     <View style={styles.ligne}>
       {Array.from({ length: longueur }).map((_, i) => (
-        <CaseLettre key={`${i}-${lettres[i] || ''}-${evaluation?.[i] || ''}`} lettre={lettres[i] || ''} evaluation={evaluation?.[i]} />
+        <CaseLettre key={`t-${i}-${lettres[i] || 'v'}-${evaluation?.[i] || 'n'}`} lettre={lettres[i] || ''} evaluation={evaluation?.[i]} />
       ))}
     </View>
   );
@@ -522,12 +524,13 @@ function EcranJeu({ mode, onMenu, onAutreMode }: {
             setTimeout(() => passerMotSuivant(serieIndex + 1, nouvSt, nouvSe, nouvLS, dateDuJour), 1200);
           } else {
             // Dernier mot trouvé → récupérer tous les mots pour la modal finale
+            let tousLesMots = [...nouvMC]; // fallback avec les données déjà connues
             try {
               const ab = await apiFetch('/serie/abandon', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ playerId: playerIdRef.current }),
               });
-              const tousLesMots = Array(5).fill('');
+              tousLesMots = Array(5).fill('');
               ab.mots.forEach((m: any) => { tousLesMots[m.index] = m.motCible; });
               setSerieMotsCibles(tousLesMots);
             } catch (_) {}
@@ -587,7 +590,7 @@ function EcranJeu({ mode, onMenu, onAutreMode }: {
     const nouvSt = [...st]; nouvSt[idx] = 'en_cours';
     const m      = serieMots[idx];
     setSerieIndex(idx); setSerieStatuts(nouvSt);
-    setTentatives([]); setLettresStatut(ls); setLettresCorrectes({});
+    setTentatives([]); setLettresStatut({}); setLettresCorrectes({});
     setEtatPartie('en_cours'); setMotCible('');
     setLongueur(m.longueur); setPremiereLettreJ(m.premiereLettre);
     initSaisie(m.premiereLettre, m.longueur);
