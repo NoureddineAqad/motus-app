@@ -83,14 +83,13 @@ function CaseLettre({ lettre, evaluation, indicatif = false }: {
   }, [lettre, evaluation]);
 
   let bg = C.vide, borderColor = C.bordure, borderWidth = 1.5, color = C.texte;
-  let isPresent = false;
 
   if (evaluation === 'correct') {
     bg = C.correct; borderColor = C.correct; borderWidth = 0;
   } else if (evaluation === 'present') {
-    isPresent = true; bg = C.absent; borderColor = C.absent; borderWidth = 0; color = '#1a0a2e';
+    bg = '#FFD700'; borderColor = '#FFD700'; borderWidth = 0; color = '#1a0a2e';
   } else if (evaluation === 'absent') {
-    bg = C.absent; borderColor = C.absent; color = C.texteSombre;
+    bg = '#3a2a5e'; borderColor = '#3a2a5e'; color = '#ffffff';
   } else if (lettre && !indicatif) {
     borderColor = C.accent; borderWidth = 2;
   } else if (indicatif) {
@@ -103,8 +102,7 @@ function CaseLettre({ lettre, evaluation, indicatif = false }: {
       { backgroundColor: bg, borderColor, borderWidth, opacity: indicatif ? 0.45 : 1 },
       !evaluation && { transform: [{ scale }] },
     ]}>
-      {isPresent && <View style={styles.cerclePresentCase} />}
-      <Text style={[styles.caseTexte, { color, zIndex: 1 }]}>{lettre}</Text>
+      <Text style={[styles.caseTexte, { color }]}>{lettre ? lettre + '​' : ''}</Text>
     </Animated.View>
   );
 }
@@ -743,7 +741,7 @@ const styles = StyleSheet.create({
 
   // Case
   case:      { width: TAILLE_CASE, height: TAILLE_CASE, borderRadius: 6, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: C.bordure, overflow: 'hidden' },
-  caseTexte: { fontSize: TAILLE_CASE * 0.46, fontWeight: '900', color: C.texte, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  caseTexte: { fontSize: TAILLE_CASE * 0.5, fontWeight: '900', color: C.texte, fontFamily: Platform.OS === 'ios' ? 'Georgia-Bold' : 'serif' },
   cerclePresentCase: { position: 'absolute', top: 5, left: 5, right: 5, bottom: 5, borderRadius: 999, backgroundColor: '#FFD700', zIndex: 0 },
 
   // Clavier
