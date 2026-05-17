@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
   Animated, ActivityIndicator, SafeAreaView, Platform,
-  Dimensions, StatusBar, Vibration, LogBox,
+  Dimensions, StatusBar, LogBox,
 } from 'react-native';
 
 LogBox.ignoreAllLogs();
@@ -102,7 +102,7 @@ function CaseLettre({ lettre, evaluation, indicatif = false }: {
       { backgroundColor: bg, borderColor, borderWidth, opacity: indicatif ? 0.45 : 1 },
       !evaluation && { transform: [{ scale }] },
     ]}>
-      <Text style={[styles.caseTexte, { color }]}>{lettre ? lettre + '​' : ''}</Text>
+      <Text style={[styles.caseTexte, { color }]}>{evaluation === 'absent' && lettre === 'I' ? 'I*' : lettre}</Text>
     </Animated.View>
   );
 }
@@ -177,7 +177,7 @@ function Clavier({ statut, onTouche, desactive }: {
               <TouchableOpacity
                 key={t}
                 style={[styles.touche, speciale && styles.toucheSpeciale, { backgroundColor: bg }, borderStyle]}
-                onPress={() => { if (!desactive) { Vibration.vibrate(20); onTouche(t); } }}
+                onPress={() => { if (!desactive) { onTouche(t); } }}
                 hitSlop={{ top: 4, bottom: 4, left: 2, right: 2 }}
                 activeOpacity={0.7}
               >
@@ -519,7 +519,7 @@ function EcranJeu({ mode, onMenu, onAutreMode }: {
           setSerieMotsCibles(nouvMC);
           if (serieIndex < 4) {
             await saveSerie(serieIndex, nouvSt, nouvSe, nouvTentatives, nouvLS, nouvLC, 'en_cours', mc, dateDuJour);
-            setTimeout(() => passerMotSuivant(serieIndex + 1, nouvSt, nouvSe, nouvLS, dateDuJour), 1200);
+            setTimeout(() => passerMotSuivant(serieIndex + 1, nouvSt, nouvSe, {}, dateDuJour), 1200);
           } else {
             // Dernier mot trouvé → récupérer tous les mots pour la modal finale
             let tousLesMots = [...nouvMC]; // fallback avec les données déjà connues
@@ -566,7 +566,7 @@ function EcranJeu({ mode, onMenu, onAutreMode }: {
           setSerieStatuts(nouvSt); setSerieEssais(nouvSe);
           if (serieIndex < 4) {
             await saveSerie(serieIndex, nouvSt, nouvSe, nouvTentatives, nouvLS, nouvLC, 'en_cours', mc, dateDuJour);
-            setTimeout(() => passerMotSuivant(serieIndex + 1, nouvSt, nouvSe, nouvLS, dateDuJour), 1200);
+            setTimeout(() => passerMotSuivant(serieIndex + 1, nouvSt, nouvSe, {}, dateDuJour), 1200);
           } else {
             // Dernier mot perdu → tous les mots déjà récupérés via abandon ci-dessus
             setEtatPartie('perdu');
@@ -592,7 +592,7 @@ function EcranJeu({ mode, onMenu, onAutreMode }: {
     setEtatPartie('en_cours'); setMotCible('');
     setLongueur(m.longueur); setPremiereLettreJ(m.premiereLettre);
     initSaisie(m.premiereLettre, m.longueur);
-    await saveSerie(idx, nouvSt, se, [], ls, {}, 'en_cours', '', date);
+    await saveSerie(idx, nouvSt, se, [], {}, {}, 'en_cours', '', date);
   }
 
   function gererTouche(t: string) {
@@ -745,7 +745,7 @@ const styles = StyleSheet.create({
   cerclePresentCase: { position: 'absolute', top: 5, left: 5, right: 5, bottom: 5, borderRadius: 999, backgroundColor: '#FFD700', zIndex: 0 },
 
   // Clavier
-  clavier: { paddingHorizontal: 4, paddingBottom: 16, gap: 6 },
+  clavier: { paddingHorizontal: 4, paddingBottom: Platform.OS === 'android' ? 52 : 16, gap: 6 },
   rangee:  { flexDirection: 'row', justifyContent: 'center', gap: 5 },
   touche:  { minWidth: 34, height: TAILLE_TOUCHE_H, paddingHorizontal: 4, borderRadius: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: C.clavier, overflow: 'hidden' },
   toucheSpeciale:  { minWidth: 46 },
