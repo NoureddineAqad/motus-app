@@ -102,7 +102,7 @@ function CaseLettre({ lettre, evaluation, indicatif = false }: {
       { backgroundColor: bg, borderColor, borderWidth, opacity: indicatif ? 0.45 : 1 },
       !evaluation && { transform: [{ scale }] },
     ]}>
-      <Text style={[styles.caseTexte, { color }]}>{evaluation === 'absent' && lettre === 'I' ? 'I*' : lettre}</Text>
+      <Text style={[styles.caseTexte, { color }]}>{lettre ? lettre + '​' : ''}</Text>
     </Animated.View>
   );
 }
@@ -587,10 +587,16 @@ function EcranJeu({ mode, onMenu, onAutreMode }: {
   async function passerMotSuivant(idx: number, st: string[], se: number[], ls: Record<string, Evaluation>, date: string) {
     const nouvSt = [...st]; nouvSt[idx] = 'en_cours';
     const m      = serieMots[idx];
-    setSerieIndex(idx); setSerieStatuts(nouvSt);
-    setTentatives([]); setLettresStatut({}); setLettresCorrectes({});
-    setEtatPartie('en_cours'); setMotCible('');
-    setLongueur(m.longueur); setPremiereLettreJ(m.premiereLettre);
+    // Reset complet avant de changer l'index pour éviter tout héritage
+    setLettresStatut({});
+    setLettresCorrectes({});
+    setTentatives([]);
+    setEtatPartie('en_cours');
+    setMotCible('');
+    setLongueur(m.longueur);
+    setPremiereLettreJ(m.premiereLettre);
+    setSerieIndex(idx);
+    setSerieStatuts(nouvSt);
     initSaisie(m.premiereLettre, m.longueur);
     await saveSerie(idx, nouvSt, se, [], {}, {}, 'en_cours', '', date);
   }
@@ -680,7 +686,7 @@ function EcranJeu({ mode, onMenu, onAutreMode }: {
       ) : null}
 
       {/* Clavier */}
-      <Clavier statut={lettresStatut} onTouche={gererTouche} desactive={etatPartie !== 'en_cours'} />
+      {etatPartie === 'en_cours' && <Clavier key={`clavier-${serieIndex}-${mode}`} statut={lettresStatut} onTouche={gererTouche} desactive={false} />}
 
       {/* Modal fin */}
       {afficherModal && (
